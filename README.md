@@ -1,8 +1,10 @@
-# mo_backup-cookbook
+# Cookbook: mo_backup
 
 Cookbook to perform servers and applications backups.
 
 ## Supported Platforms
+
+## Recipes
 
 ## Attributes
 
