@@ -1,0 +1,75 @@
+# encoding: utf-8
+
+<%
+  app = @app
+  name = @name
+  description = @description
+  storages = @storages
+  databases = @databases
+  mail_config = @mail_config
+%>
+
+Model.new(:<%= name %>, "<%= description %>") do
+  archive :application do |archive|
+    <% if app["backup"]["archive"]["use_sudo"] %>
+    archive.use_sudo
+    <% end %>
+    <% if app["backup"]["archive"]["root"] %>
+    archive.root "/opt/applications"
+    <% end %>
+    <% app["backup"]["archive"]["add"].each do |path| %>
+    archive.add "<%= path %>"
+    <% end %>
+  end
+
+  <% storages.each do |storage| %>
+    <% storage["s3"].each do |s| %>
+  store_with S3 do |s3|
+    s3.access_key_id     = "<%= s["access_key_id"] %>"
+    s3.secret_access_key = "<%= s["secret_access_key"] %>"
+    s3.region            = "<%= s["region"] %>"
+    s3.bucket            = "<%= s["bucket"] %>"
+    s3.path              = "<%= s["path"] %>"
+    s3.keep              = "<%= s["keep"] %>"
+  end
+    <% end %>
+  <% end %>
+
+  <% databases.each do |ddbb| %>
+    <% ddbb["mysql"].each do |d| %>
+  database MySQL do |db|
+    db.name               = "<%= d["name"] %>"
+    db.username           = "<%= d["username"] %>"
+    db.password           = "<%= d["password"] %>"
+    <% if d["socket"] %>
+    db.socket             = "<%= d["socket"] %>"
+    <% else %>
+    db.host               = "<%= d["host"] || "localhost" %>"
+    db.port               = <%= d["port"] || 3306 %>
+    <% end %>
+    db.prepare_backup     = <%= d["prepare_backup"] || true %>
+  end
+    <% end %>
+  <% end %>
+
+  <% if app["backup"]["compress"] %>
+  compress_with Gzip
+  <% end %>
+
+  <% if mail_config %>
+  notify_by Mail do |mail|
+    mail.on_success           = <%= mail_config["on_success"] || "true" %>
+    mail.on_warning           = <%= mail_config["on_warning"] || "true" %>
+    mail.on_failure           = <%= mail_config["on_failure"] || "true" %>
+    mail.from                 = "<%= mail_config["from"] %>"
+    mail.to                   = "<%= mail_config["to"] %>"
+    mail.address              = "<%= mail_config["address"] %>"
+    mail.port                 = <%= mail_config["port"] || "587" %>
+    mail.domain               = "<%= mail_config["domain"] %>"
+    mail.user_name            = "<%= mail_config["user_name"] %>"
+    mail.password             = "<%= mail_config["password"] %>"
+    mail.authentication       = "<%= mail_config["authentication"] || "login"%>"
+    mail.encryption           = :<%= mail_config["encryption"] || "starttls" %>
+  end
+  <% end %>
+end

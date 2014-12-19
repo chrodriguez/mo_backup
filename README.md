@@ -1,23 +1,252 @@
 # Cookbook: mo_backup
 
-Cookbook to perform servers and applications backups.
+Cookbook to perform application backups. This cookbook uses
+[backup gem](http://meskyanichi.github.io/backup/v4/) to run the backups.
 
 ## Table of Contents
 
+* [Development](#development)
+  * [Current state](#current-state)
+  * [Features planned](#features-planned)
 * [Supported Platforms](#supported-platforms)
 * [Recipes](#recipes)
+* [Libraries](#libraries)
 * [Attributes](#attributes)
 * [Usage](#usage)
+  * [Required attributes](#required-attributes)
+  * [Required databag and databag items](#required-databag-and-databag-items)
+    * [Application databag item](#application-databag-item)
+    * [Storage databag item](#storage-databag-item)
+    * [Mail databag item](#mail-databag-item)
+  * [Backup recipe](#backup-recipe)
 * [License](#license)
 * [Authors](#authors)
 
+## Development
+
+This cookbook is still in development but can be used if current features cover
+your needs.
+
+### Current state
+
+For now, this cookbook:
+
+* Supports installing rbenv globally and the backup gem inside it.
+* Provides a method to generate the backup configuration file (the model) for:
+  * Application files.
+  * MySQL databases.
+* Supports:
+  * Amazon S3 as the only storage.
+  * Mail relay configuration.
+  * Compression with Gzip.
+
+### Features planned
+
+Features to be implemented:
+
+* Databases.
+  * MongoDB.
+  * Redis.
+* Encryptors.
+  * OpenSSL.
+* Notifiers: not sure yet about this.
+* Schedule: support for scheduling the backups.
+* Storages.
+  * Dropbox.
+  * Local.
+  * Rsync.
+  * SCP.
+  * SFTP.
+* Syncers.
+  * Rsync.
+
 ## Supported Platforms
+
+Tested on Ubuntu 14.04, should work on:
+
+* Centos / Redhat / Fedora / Ubuntu / Debian.
 
 ## Recipes
 
+This cookbook has only one recipe which is `install`, the one that sets up the
+global rbenv environment and the backup gem inside that environment. Must be
+run on every server that will execute backups with this cookbook.
+
+## Libraries
+
+`mixin_model`: this library is the one used to create the applications backup
+configuration. It provides a method with the following signature:
+
+`mo_backup_generate_model(app, environment)`
+
+where:
+
+* **app**: is the hash with the required values to configure the backup (check usage
+  below).
+* **environment**: is the environment for which the backup is to be created.
+
 ## Attributes
 
+The only attribute this cookbook has is the ruby version to install on the
+server, when using `install` recipe.
+
 ## Usage
+
+For an usage example, check out the
+[mo_backup_sample](https://github.com/Desarrollo-CeSPI/mo_backup_sample)
+cookbook which provides a complete sample application.
+
+To use this cookbook you'll need to fulfill the following requirements.
+
+### Required attributes
+
+Te generate the backup configuration file you'll need to pass to the
+mo_backup_generate_model method a hash with the following attributes:
+
+* **id**: application id, the one that will be used to look for the
+  corresponding data bag item.
+* **databag**: the applications databag, where the application with the id **id** is
+  defined.
+* **description**: a description for the application.
+* **user**: the user the application runs or is deployed with.
+* **storages_databag**: the databag where the different storages are defined.
+* **mail_databag**: the databag where the mail relay configuration is specified.
+
+### Required databag and databag items
+
+This cookbook needs three databags and each defines different items. Sample
+databags are shown in the mo_backup_sample cookbook.
+
+Following, databag examples will be shown. These databags are the ones included
+in mo_backup_sample cookbook.
+
+#### Aplication databag item
+
+The application databag will need to define a backup section and a databases
+section in case it uses databases. Along with the database name, username,
+password and host it is necessary to specify its type.
+
+An example databag:
+
+`knife solo data bag show applications my_app --secret-file .chef/data_bag_key -Fj`
+
+```json
+{
+  "id": "my_app",
+  "production": {
+    "databases": [
+      {
+        "name": "my_app",
+        "username": "my_app",
+        "password": "my_apppass",
+        "host": "172.17.2.1",
+        "type": "mysql"
+      },
+      {
+        "name": "my_app2",
+        "username": "my_app2",
+        "password": "my_app2pass",
+        "type": "mysql"
+      }
+    ],
+    "backup": {
+      "archive": {
+        "root": "/opt/applications/my_app",
+        "add": [
+          "/app/",
+          "/log"
+        ],
+        "use_sudo": false
+      },
+      "databases": [
+        "my_app",
+        "my_app2"
+      ],
+      "compress": true,
+      "storages": [
+        {
+          "id": "s3",
+          "path": "my_app",
+          "keep": 30
+        },
+        {
+          "id": "otro_s3",
+          "path": "backups",
+          "keep": 60
+        }
+      ],
+      "mail": {
+        "mail_id": "mail_app",
+        "on_success": "false",
+        "from": "my-app-backups@example.local",
+        "to": "my-app-group@example.local"
+      },
+      "encryptor": {
+
+      }
+    }
+  }
+}
+```
+
+#### Storage databag item
+
+Storage databag will have all the possible storages used for backups. Each
+application could use a different storage and the configuration will use the
+values defined in the corresponding item.
+
+An example databag:
+
+`knife solo data bag show backup_storages s3 --secret-file .chef/data_bag_key -Fj`
+
+```json
+
+{
+  "id": "s3",
+  "access_key_id": "fbiuhfiu23hof3189",
+  "secret_access_key": "hgw87qydiu1hoG/yhdw8ydgw7iuyK",
+  "region": "us-west-2",
+  "bucket": "backups",
+  "encryption": "aes256",
+  "type": "s3"
+}
+```
+
+Besides the storages databag, a storage section is optionally present in the
+application databag to overwrite or add some configuration values.
+
+#### Mail databag item
+
+Mail is used to send notifications after backups are executed. Can be configured
+to send notifications on success, on warnings and/or on failures.
+
+An example databag:
+
+`knife solo data bag show mail_databag mail_app --secret-file .chef/data_bag_key -Fj`
+
+```json
+{
+  "id": "mail_app",
+  "from": "no-reply@example.local",
+  "to": "ti@example.local",
+  "address": "smtp.example.local",
+  "port": 465,
+  "domain": "example.local",
+  "user_name": "no-reply",
+  "password": "nd238diqwkjbh2",
+  "authentication": "login",
+  "encryption": "starttls"
+}
+```
+
+Besides the mail databag, a mail section is optionally present in the
+application databag to overwrite or add some configuration values.
+
+### Backup recipe
+
+On your application, write a backup recipe calling the mo_backup_generate_model
+method, giving it the necesary parameters. Have in mind that it does not
+schedules the backup, so you will need to do it manually (for now...).
 
 ## License
 
