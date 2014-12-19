@@ -17,6 +17,23 @@ def mo_backup_generate_model(app, environment)
   end
 end
 
+def mo_backup_schedule_job(app, environment, action="create")
+
+  data = encrypted_data_bag_item(app["databag"], app["id"])[environment]["backup"]
+  dir = File.join(::Dir.home(app["user"]),".backup_#{app["id"]}_#{environment}")
+
+  cron app["id"] do
+    minute data["schedule"]["minute"]    || "0"
+    hour data["schedule"]["hour"]        || "2"
+    day data["schedule"]["day"]          || "*"
+    month data["schedule"]["month"]      || "*"
+    weekday data["schedule"]["weekday"]  || "*"
+    user app["user"]                     || "root"
+    command "/opt/rbenv/shims/backup --perform --trigger #{app["id"]} --config-file #{dir}"
+    action action.to_sym
+  end
+end
+
 private
 
 def get_storages(storage_databag, storages_to_use)
