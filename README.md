@@ -37,8 +37,9 @@ For now, this cookbook:
   * MySQL databases.
 * Supports:
   * Amazon S3 as the only storage.
-  * Mail relay configuration.
+  * Backup scheduling.
   * Compression with Gzip.
+  * Mail relay configuration.
 
 ### Features planned
 
@@ -50,7 +51,6 @@ Features to be implemented:
 * Encryptors.
   * OpenSSL.
 * Notifiers: not sure yet about this.
-* Schedule: support for scheduling the backups.
 * Storages.
   * Dropbox.
   * Local.
@@ -74,16 +74,19 @@ run on every server that will execute backups with this cookbook.
 
 ## Libraries
 
-`mixin_model`: this library is the one used to create the applications backup
-configuration. It provides a method with the following signature:
+`mixin_model`: this library is the one used to create and schedule the
+applications backup configuration. It provides two methods:
 
-`mo_backup_generate_model(app, environment)`
+* `mo_backup_generate_model(app, environment)`
+* `mo_backup_schedule_job(app, environment, [action])`
 
 where:
 
 * **app**: is the hash with the required values to configure the backup (check usage
   below).
 * **environment**: is the environment for which the backup is to be created.
+* **action**: could be `create` or `delete` and it's optional. If not specified, create
+  is the default value.
 
 ## Attributes
 
@@ -157,6 +160,9 @@ An example databag:
           "/log"
         ],
         "use_sudo": false
+      },
+      "schedule": {
+        "hour": "3"
       },
       "databases": [
         "my_app",
@@ -245,8 +251,13 @@ application databag to overwrite or add some configuration values.
 ### Backup recipe
 
 On your application, write a backup recipe calling the mo_backup_generate_model
-method, giving it the necesary parameters. Have in mind that it does not
-schedules the backup, so you will need to do it manually (for now...).
+method, giving it the necessary parameters.
+
+If you want to schedule the job you'll need to also call the
+mo_backup_schedule_job method. In that case, you'll probably want to specify
+when you wish to run the backups which will require adding some parameters to
+the application databag. If you don't want to give your own scheduling
+parameters, defaults will be used.
 
 ## License
 
