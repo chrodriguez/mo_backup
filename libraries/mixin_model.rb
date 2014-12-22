@@ -2,10 +2,10 @@ $:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FIL
 
 require 'chef/sugar'
 
-def mo_backup_generate_model(app, environment)
+def mo_backup_generate_model(data)
 
-  data = encrypted_data_bag_item(app["databag"], app["id"])[environment]
-  storages = get_storages(app["storages_databag"], data["backup"]["storages"])
+  storages = get_storages(data['id'], data["backup"]["storages_databag"], data["backup"]["storages"])
+
   databases = get_databases(data["databases"])
   mail_config = get_mail_config(app["mail_databag"], data["backup"]["mail"])
 
@@ -36,7 +36,7 @@ end
 
 private
 
-def get_storages(storage_databag, storages_to_use)
+def get_storages(application_id, storage_databag, storages_to_use)
   storages_to_use.map do |s; enc_storage|
     enc_storage = encrypted_data_bag_item(storage_databag, s["id"])
     {
@@ -47,7 +47,7 @@ def get_storages(storage_databag, storages_to_use)
           "region"              => enc_storage["region"],
           "bucket"              => enc_storage["bucket"],
           "encryption"          => enc_storage["encryption"],
-          "path"                => s["path"] || node["mo_backup"]["storage"]["path"],
+          "path"                => ::File.join(s["path"] || application_id, node_chef_environment),
           "keep"                => s["keep"] || node["mo_backup"]["storage"]["keep"]
         }
       ]
