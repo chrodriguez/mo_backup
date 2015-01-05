@@ -1,15 +1,19 @@
+# Chef sugar library
 $:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FILE__)]
 
 require 'chef/sugar'
 
-def mo_backup_generate_model(data)
+def mo_backup_generate_model(app)
+
+  data = data_bag_item_for_environment(app["databag"], app["id"])
+  Chef::Mixin::DeepMerge.deep_merge(app, data)
 
   storages = get_storages(data['id'], data["backup"]["storages_databag"], data["backup"]["storages"])
 
   databases = get_databases(data["databases"])
-  mail_config = get_mail_config(app["mail_databag"], data["backup"]["mail"])
+  mail_config = get_mail_config(app["backup"]["mail_databag"], data["backup"]["mail"])
 
-  template ::File.join(::Dir.home(app["user"]),".backup_#{app["id"]}_#{environment}") do
+  template ::File.join(::Dir.home(app["user"]),".backup_#{app["id"]}_#{node.chef_environment}") do
     source "model.rb.erb"
     cookbook "mo_backup"
     variables( :app => data, :name => app["id"], :description => app["description"],
@@ -17,10 +21,10 @@ def mo_backup_generate_model(data)
   end
 end
 
-def mo_backup_schedule_job(app, environment, action="create")
+def mo_backup_schedule_job(app, action="create")
 
-  data = encrypted_data_bag_item(app["databag"], app["id"])[environment]["backup"]
-  dir = File.join(::Dir.home(app["user"]),".backup_#{app["id"]}_#{environment}")
+  data = data_bag_item_for_environment(app["databag"], app["id"])["backup"]
+  dir = File.join(::Dir.home(app["user"]),".backup_#{app["id"]}_#{node.chef_environment}")
 
   cron app["id"] do
     minute data["schedule"]["minute"]    || "0"
@@ -47,7 +51,7 @@ def get_storages(application_id, storage_databag, storages_to_use)
           "region"              => enc_storage["region"],
           "bucket"              => enc_storage["bucket"],
           "encryption"          => enc_storage["encryption"],
-          "path"                => ::File.join(s["path"] || application_id, node_chef_environment),
+          "path"                => ::File.join(s["path"] || application_id, node.chef_environment),
           "keep"                => s["keep"] || node["mo_backup"]["storage"]["keep"]
         }
       ]
