@@ -77,14 +77,13 @@ run on every server that will execute backups with this cookbook.
 `mixin_model`: this library is the one used to create and schedule the
 applications backup configuration. It provides two methods:
 
-* `mo_backup_generate_model(app, environment)`
-* `mo_backup_schedule_job(app, environment, [action])`
+* `mo_backup_generate_model(app)`
+* `mo_backup_schedule_job(app, [action])`
 
 where:
 
 * **app**: is the hash with the required values to configure the backup (check usage
   below).
-* **environment**: is the environment for which the backup is to be created.
 * **action**: could be `create` or `delete` and it's optional. If not specified, create
   is the default value.
 
@@ -112,8 +111,9 @@ mo_backup_generate_model method a hash with the following attributes:
   defined.
 * **description**: a description for the application.
 * **user**: the user the application runs or is deployed with.
-* **storages_databag**: the databag where the different storages are defined.
-* **mail_databag**: the databag where the mail relay configuration is specified.
+* **backup**: this key should have the following subkeys:
+  * **storages_databag**: the databag where the different storages are defined.
+  * **mail_databag**: the databag where the mail relay configuration is specified.
 
 ### Required databag and databag items
 
@@ -131,7 +131,7 @@ password and host it is necessary to specify its type.
 
 An example databag:
 
-`knife solo data bag show applications my_app --secret-file .chef/data_bag_key -Fj`
+`knife solo data bag show applications my_app -Fj`
 
 ```json
 {
