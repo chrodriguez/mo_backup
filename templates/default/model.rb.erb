@@ -6,6 +6,7 @@
   description = @description
   storages = @storages
   databases = @databases
+  sync_config = @sync_config
   mail_config = @mail_config
 %>
 
@@ -54,6 +55,35 @@ Model.new(:<%= name %>, "<%= description %>") do
 
   <% if app["backup"]["compress"] %>
   compress_with Gzip
+  <% end %>
+
+  <% sync_config.each do |sc| %>
+    <% sc["rsync"].each do |r| %>
+  sync_with RSync::Push do |rsync|
+    rsync.mode                        = :<%= r["mode"] || "ssh" %>
+    rsync.host                        = "<%= r["host"] %>"
+    rsync.port                        = "<%= r["port"] || "22" %>"
+    rsync.ssh_user                    = "<%= r["ssh_user"] %>"
+    <% if r["additional_ssh_options"] %>
+    rsync.additional_ssh_options      = "<%= r["additional_ssh_options"] %>"
+    <% end %>
+    <% if r["additional_rsync_options"] %>
+    rsync.additional_rsync_options    = "<%= r["additional_rsync_options"] %>"
+    <% end %>
+    rsync.mirror                      = <%= r["mirror"] || true %>
+    rsync.compress                    = <%= r["compress"] || true %>
+
+    rsync.directories do |directory|
+      <% r["directory"]["add"].each do |dir| %>
+      directory.add <%= "#{dir}" %>
+      <% end %>
+      <% r["directory"]["exclude"].each do |dir| %>
+      directory.exclude <%= "#{dir}" %>
+      <% end %>
+    end
+    rsync.path = <%= r["path"] || "backups" %>
+  end
+    <% end %>
   <% end %>
 
   <% if mail_config %>

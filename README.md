@@ -40,6 +40,7 @@ For now, this cookbook:
   * Backup scheduling.
   * Compression with Gzip.
   * Mail relay configuration.
+  * Synchronization using rsync.
 
 ### Features planned
 
@@ -57,8 +58,6 @@ Features to be implemented:
   * Rsync.
   * SCP.
   * SFTP.
-* Syncers.
-  * Rsync.
 
 ## Supported Platforms
 
@@ -113,6 +112,7 @@ mo_backup_generate_model method a hash with the following attributes:
 * **user**: the user the application runs or is deployed with.
 * **backup**: this key should have the following subkeys:
   * **storages_databag**: the databag where the different storages are defined.
+  * **syncers_databag**: the databag where the different syncers are defined.
   * **mail_databag**: the databag where the mail relay configuration is specified.
 
 ### Required databag and databag items
@@ -181,6 +181,15 @@ An example databag:
           "keep": 60
         }
       ],
+      "syncers": [
+        {
+          "id": "rsync1",
+          "directory": {
+            "add": ["/var/lib/mysql", "/opt/applications"],
+            "exclude": ["/opt/applications/tmp"]
+          }
+        }
+      ],
       "mail": {
         "mail_id": "mail_app",
         "on_success": "false",
@@ -220,6 +229,32 @@ An example databag:
 
 Besides the storages databag, a storage section is optionally present in the
 application databag to overwrite or add some configuration values.
+
+#### Syncers databag item
+
+Syncers databag will have all the possible syncers to use for backups. Each
+application could use a different syncer and the configuration will use the
+values defined in the corresponding item.
+
+An example databag:
+
+`knife solo data bag show backup_syncers rsync1 --secret-file .chef/data_bag_key -Fj`
+
+```json
+{
+  "id": "rsync1",
+  "host": "123.123.123.123",
+  "ssh_user": "ssh_username",
+  "ssh_pubkey": "ssh-rsa bd3hwkqdbufhwqljbfkjwabsfh89weuhafubJHIUY l@local",
+  "ssh_pubkey_file": "rsync_sync",
+  "additional_ssh_options": "-i ~/.ssh/rsync_sync",
+  "path": "backups",
+  "type": "rsync"
+}
+```
+
+Besides the syncers databag, a syncer section is present in the application
+databag to define some additional values.
 
 #### Mail databag item
 
