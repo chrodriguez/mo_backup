@@ -102,7 +102,7 @@ To use this cookbook you'll need to fulfill the following requirements.
 
 ### Required attributes
 
-Te generate the backup configuration file you'll need to pass to the
+To generate the backup configuration file you'll need to pass to the
 mo_backup_generate_model method a hash with the following attributes:
 
 * **id**: application id, the one that will be used to look for the
