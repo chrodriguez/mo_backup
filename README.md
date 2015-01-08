@@ -54,8 +54,6 @@ Features to be implemented:
 * Notifiers: not sure yet about this.
 * Storages.
   * Dropbox.
-  * Local.
-  * Rsync.
   * SCP.
   * SFTP.
 
