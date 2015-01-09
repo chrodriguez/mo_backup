@@ -13,9 +13,12 @@ def mo_backup_generate_model(app)
   # Check how to ask if a data bag is defined.
   storages = get_storages(data["id"], data["backup"]["storages_databag"], data["backup"]["storages"])
   databases = get_databases(data["databases"])
-  mail_config = get_mail_config(app["backup"]["mail_databag"], data["backup"]["mail"])
-  sync_config = get_sync_config(app["backup"]["syncers_databag"], data["backup"]["syncers"])
+  mail_config = get_mail_config(data["backup"]["mail_databag"], data["backup"]["mail"])
+  sync_config = get_sync_config(data["backup"]["syncers_databag"], data["backup"]["syncers"])
+  Chef::Log.info("#{data["backup"]}")
+  enc_config = encrypted_data_bag_item(data["backup"]["encryption_databag"], data["backup"]["encryptor"])
 
+  # Get just rsync syncers as those are the ones that will need the public key
   rsync = sync_config.select {|r| r["rsync"]}
   if !rsync.empty?
     write_pub_key(app["user"], rsync)
@@ -28,7 +31,7 @@ def mo_backup_generate_model(app)
     cookbook "mo_backup"
     variables( :app => data, :name => app["id"], :description => app["description"],
                :storages => storages, :databases => databases, :sync_config => sync_config,
-               :mail_config => mail_config )
+               :enc_config => enc_config, :mail_config => mail_config )
   end
 end
 

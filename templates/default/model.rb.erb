@@ -7,6 +7,7 @@
   storages = @storages
   databases = @databases
   sync_config = @sync_config
+  enc_config = @enc_config
   mail_config = @mail_config
 %>
 
@@ -57,8 +58,9 @@ Model.new(:<%= name %>, "<%= description %>") do
   compress_with Gzip
   <% end %>
 
-  <% sync_config.each do |sc| %>
-    <% sc["rsync"].each do |r| %>
+  <% if sync_config %>
+    <% sync_config.each do |sc| %>
+      <% sc["rsync"].each do |r| %>
   sync_with RSync::Push do |rsync|
     rsync.mode                        = :<%= r["mode"] || "ssh" %>
     rsync.host                        = "<%= r["host"] %>"
@@ -75,13 +77,24 @@ Model.new(:<%= name %>, "<%= description %>") do
 
     rsync.directories do |directory|
       <% r["directory"]["add"].each do |dir| %>
-      directory.add <%= "#{dir}" %>
+      directory.add "<%= "#{dir}" %>"
       <% end %>
       <% r["directory"]["exclude"].each do |dir| %>
-      directory.exclude <%= "#{dir}" %>
+      directory.exclude "<%= "#{dir}" %>"
       <% end %>
     end
-    rsync.path = <%= r["path"] || "backups" %>
+    rsync.path = "<%= r["path"] || "backups" %>"
+  end
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if enc_config %>
+    <% if enc_config["type"] == "openssl" %>
+  encrypt_with OpenSSL do |encryption|
+    encryption.password = "<%= enc_config["password"] %>"
+    encryption.base64   = <%= enc_config["base64"] || true %>
+    encryption.salt     = <%= enc_config["salt"] || true %>
   end
     <% end %>
   <% end %>
