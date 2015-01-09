@@ -40,7 +40,9 @@ For now, this cookbook:
   * Backup scheduling.
   * Compression with Gzip.
   * Mail relay configuration.
-  * Synchronization using rsync.
+  * Encryption with OpenSSL.
+
+Partial support for synchronization using rsync.
 
 ### Features planned
 
@@ -49,8 +51,6 @@ Features to be implemented:
 * Databases.
   * MongoDB.
   * Redis.
-* Encryptors.
-  * OpenSSL.
 * Notifiers: not sure yet about this.
 * Storages.
   * Dropbox.
@@ -167,6 +167,7 @@ An example databag:
         "my_app2"
       ],
       "compress": true,
+      "encryptor": "enc1",
       "storages": [
         {
           "id": "s3",
@@ -193,9 +194,6 @@ An example databag:
         "on_success": "false",
         "from": "my-app-backups@example.local",
         "to": "my-app-group@example.local"
-      },
-      "encryptor": {
-
       }
     }
   }
@@ -253,6 +251,28 @@ An example databag:
 
 Besides the syncers databag, a syncer section is present in the application
 databag to define some additional values.
+
+#### Encryptors databag item
+
+Encryptors databag will have all the possible encryptors to use for backups. Each
+application could use a different encryptor and the configuration will use the
+values defined in the corresponding item.
+
+An example databag:
+
+`knife solo data bag show backup_encryption enc1 --secret-file .chef/data_bag_key -Fj`
+
+```json
+{
+  "id": "enc1",
+  "password": "h9fh2efniu321gfu1gfuy",
+  "type": "openssl"
+}
+```
+
+Besides the encryptors databag, an encryptor section is present in the application
+databag to define some additional values and specify which of the encryptors the
+application will be using.
 
 #### Mail databag item
 
