@@ -21,7 +21,7 @@ def mo_backup_generate_model(app)
     write_pub_key(app["user"], rsync)
   end
 
-  template ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"], "#{data["id"]}_#{node.chef_environment}.rb") do
+  template ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || "Backup/models", "#{data["id"]}_#{node.chef_environment}.rb") do
     owner data["user"]
     group get_group(data["user"])
     source "model.rb.erb"
