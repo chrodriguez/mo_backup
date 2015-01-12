@@ -35,7 +35,6 @@ end
 def mo_backup_schedule_job(app, action="create")
 
   data = data_bag_item_for_environment(app["databag"], app["id"])["backup"]
-  dir = File.join(::Dir.home(app["user"]),".backup_#{app["id"]}_#{node.chef_environment}")
 
   cron app["id"] do
     minute data["schedule"]["minute"]    || "0"
@@ -44,7 +43,7 @@ def mo_backup_schedule_job(app, action="create")
     month data["schedule"]["month"]      || "*"
     weekday data["schedule"]["weekday"]  || "*"
     user app["user"]                     || "root"
-    command "/opt/rbenv/shims/backup --perform --trigger #{app["id"]} --config-file #{dir}"
+    command "/opt/rbenv/shims/backup perform --trigger #{app["id"]}_#{node.chef_environment}"
     action action.to_sym
   end
 end
