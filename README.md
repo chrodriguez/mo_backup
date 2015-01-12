@@ -36,7 +36,7 @@ For now, this cookbook:
   * Application files.
   * MySQL databases.
 * Supports:
-  * Amazon S3 as the only storage.
+  * Amazon S3 and SFTP as storages.
   * Backup scheduling.
   * Compression with Gzip.
   * Mail relay configuration.
@@ -55,7 +55,6 @@ Features to be implemented:
 * Storages.
   * Dropbox.
   * SCP.
-  * SFTP.
 
 ## Supported Platforms
 
@@ -178,6 +177,9 @@ An example databag:
           "id": "otro_s3",
           "path": "backups",
           "keep": 60
+        },
+        {
+          "id": "sftp"
         }
       ],
       "syncers": [
@@ -206,7 +208,7 @@ Storage databag will have all the possible storages used for backups. Each
 application could use a different storage and the configuration will use the
 values defined in the corresponding item.
 
-An example databag:
+An example S3 databag item:
 
 `knife solo data bag show backup_storages s3 --secret-file .chef/data_bag_key -Fj`
 
@@ -222,6 +224,18 @@ An example databag:
   "type": "s3"
 }
 ```
+
+Another example, of SFTP databag item:
+
+{
+  "id": "sftp",
+  "username": "user",
+  "password": "pass",
+  "host": "123.123.123.123",
+  "path": "~/backups",
+  "keep": "30",
+  "type": "sftp"
+}
 
 Besides the storages databag, a storage section is optionally present in the
 application databag to overwrite or add some configuration values.
