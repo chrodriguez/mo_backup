@@ -239,11 +239,9 @@ An example databag:
 ```json
 {
   "id": "rsync1",
-  "host": "123.123.123.123",
-  "ssh_user": "ssh_username",
-  "ssh_pubkey": "ssh-rsa bd3hwkqdbufhwqljbfkjwabsfh89weuhafubJHIUY l@local",
-  "ssh_pubkey_file": "rsync_sync",
-  "additional_ssh_options": "-i ~/.ssh/rsync_sync",
+  "host": "192.168.33.10",
+  "rsync_user": "leandro",
+  "rsync_password": "prueba",
   "path": "backups",
   "type": "rsync"
 }
