@@ -24,8 +24,8 @@ Model.new(:<%= name %>, "<%= description %>") do
     <% end %>
   end
 
-  <% storages.each do |storage| %>
-    <% storage["s3"].each do |s| %>
+  <% (storages || []).each do |storage| %>
+    <% (storage["s3"] || []).each do |s| %>
   store_with S3 do |s3|
     s3.access_key_id     = "<%= s["access_key_id"] %>"
     s3.secret_access_key = "<%= s["secret_access_key"] %>"
@@ -35,10 +35,20 @@ Model.new(:<%= name %>, "<%= description %>") do
     s3.keep              = "<%= s["keep"] %>"
   end
     <% end %>
+    <% (storage["sftp"] || []).each do |s| %>
+  store_with SFTP do |server|
+    server.username = "<%= s["username"] %>"
+    server.password = "<%= s["password"] %>"
+    server.ip       = "<%= s["host"] %>"
+    server.port     = <%= s["port"] || 22 %>
+    server.path     = "<%= s["path"] %>"
+    server.keep     = "<%= s["keep"] %>"
+  end
+    <% end %>
   <% end %>
 
-  <% databases.each do |ddbb| %>
-    <% ddbb["mysql"].each do |d| %>
+  <% (databases || []).each do |ddbb| %>
+    <% (ddbb["mysql"] || []).each do |d| %>
   database MySQL do |db|
     db.name               = "<%= d["name"] %>"
     db.username           = "<%= d["username"] %>"
@@ -58,9 +68,8 @@ Model.new(:<%= name %>, "<%= description %>") do
   compress_with Gzip
   <% end %>
 
-  <% if sync_config %>
-    <% sync_config.each do |sc| %>
-      <% sc["rsync"].each do |r| %>
+  <% (sync_config || []).each do |sc| %>
+    <% (sc["rsync"] || []).each do |r| %>
   sync_with RSync::Push do |rsync|
     rsync.mode                        = :<%= r["mode"] || "ssh" %>
     rsync.host                        = "<%= r["host"] %>"
@@ -85,7 +94,6 @@ Model.new(:<%= name %>, "<%= description %>") do
     end
     rsync.path = "<%= r["path"] || "backups" %>"
   end
-      <% end %>
     <% end %>
   <% end %>
 

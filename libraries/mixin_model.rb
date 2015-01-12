@@ -7,7 +7,7 @@ require 'etc'
 def mo_backup_generate_model(app)
 
   data = data_bag_item_for_environment(app["databag"], app["id"])
-  Chef::Mixin::DeepMerge.deep_merge(app, data)
+  Chef::Mixin::DeepMerge.deep_merge!(app, data)
 
   # If any of the data bags does not exist the following lines would fail. 
   # Check how to ask if a data bag is defined.
@@ -15,23 +15,20 @@ def mo_backup_generate_model(app)
   databases = get_databases(data["databases"])
   mail_config = get_mail_config(data["backup"]["mail_databag"], data["backup"]["mail"])
   sync_config = get_sync_config(data["backup"]["syncers_databag"], data["backup"]["syncers"])
-  Chef::Log.info("#{data["backup"]}")
-  enc_config = encrypted_data_bag_item(data["backup"]["encryption_databag"], data["backup"]["encryptor"])
 
-  # Get just rsync syncers as those are the ones that will need the public key
   rsync = sync_config.select {|r| r["rsync"]}
   if !rsync.empty?
     write_pub_key(app["user"], rsync)
   end
 
-  template ::File.join(::Dir.home(app["user"]),".backup_#{app["id"]}_#{node.chef_environment}") do
-    owner app["user"]
-    group get_group(app["user"])
+  template ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"], "#{data["id"]}_#{node.chef_environment}.rb") do
+    owner data["user"]
+    group get_group(data["user"])
     source "model.rb.erb"
     cookbook "mo_backup"
-    variables( :app => data, :name => app["id"], :description => app["description"],
+    variables( :app => data, :name => "#{data["id"]}_#{node.chef_environment}", :description => data["description"],
                :storages => storages, :databases => databases, :sync_config => sync_config,
-               :enc_config => enc_config, :mail_config => mail_config )
+               :mail_config => mail_config )
   end
 end
 
@@ -65,8 +62,11 @@ def get_storages(application_id, storage_databag, storages_to_use)
           "region"              => enc_storage["region"],
           "bucket"              => enc_storage["bucket"],
           "encryption"          => enc_storage["encryption"],
+          "username"            => enc_storage["username"],
+          "password"            => enc_storage["password"],
+          "host"                => enc_storage["host"],
           "path"                => ::File.join(s["path"] || application_id, node.chef_environment),
-          "keep"                => s["keep"] || node["mo_backup"]["storage"]["keep"]
+          "keep"                => s["keep"] || 5
         }
       ]
     }
