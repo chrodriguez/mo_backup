@@ -16,11 +16,6 @@ def mo_backup_generate_model(app)
   mail_config = get_mail_config(data["backup"]["mail_databag"], data["backup"]["mail"])
   sync_config = get_sync_config(data["backup"]["syncers_databag"], data["backup"]["syncers"])
 
-  rsync = sync_config.select {|r| r["rsync"]}
-  if !rsync.empty?
-    write_pub_key(app["user"], rsync)
-  end
-
   template ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || "Backup/models", "#{data["id"]}_#{node.chef_environment}.rb") do
     owner data["user"]
     group get_group(data["user"])
@@ -127,21 +122,6 @@ def get_mail_config(mail_databag, mail)
     "encryption" => enc_mail_config["encryption"]
   }
   Chef::Mixin::DeepMerge.deep_merge(mail, mail_config)
-end
-
-# This method creates every public key file with the content specified.
-def write_pub_key(user, rsync)
-  rsync.first["rsync"].each do |r|
-    if !r["ssh_pubkey_file"].nil?
-      file File.join(::Dir.home(user), ".ssh/#{r["ssh_pubkey_file"]}") do
-        owner user
-        group get_group(user)
-        mode '0750'
-        content r["ssh_pubkey"]
-        action :create
-      end
-    end
-  end
 end
 
 def get_group(user)

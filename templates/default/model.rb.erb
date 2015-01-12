@@ -71,10 +71,18 @@ Model.new(:<%= name %>, "<%= description %>") do
   <% (sync_config || []).each do |sc| %>
     <% (sc["rsync"] || []).each do |r| %>
   sync_with RSync::Push do |rsync|
-    rsync.mode                        = :<%= r["mode"] || "ssh" %>
+    rsync.mode                        = :<%= r["mode"] || "rsync_daemon" %>
     rsync.host                        = "<%= r["host"] %>"
-    rsync.port                        = "<%= r["port"] || "22" %>"
+    <% if r["rsync_user"] %>
+    rsync.rsync_user                  = "<%= r["rsync_user"] %>"
+    <% end %>
+    <% if r["rsync_password"] %>
+    rsync.rsync_password              = "<%= r["rsync_password"] %>"
+    <% end %>
+    rsync.port                        = "<%= r["port"] || "873" %>"
+    <% if r["ssh_user"] %>
     rsync.ssh_user                    = "<%= r["ssh_user"] %>"
+    <% end %>
     <% if r["additional_ssh_options"] %>
     rsync.additional_ssh_options      = "<%= r["additional_ssh_options"] %>"
     <% end %>
