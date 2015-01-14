@@ -4,6 +4,8 @@ $:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FIL
 require 'chef/sugar'
 require 'etc'
 
+require_relative 'storages'
+
 def mo_backup_generate_model(app)
 
   data = data_bag_item_for_environment(app["databag"], app["id"])
@@ -46,25 +48,7 @@ end
 private
 
 def get_storages(application_id, storage_databag, storages_to_use)
-  storages_to_use.map do |s; enc_storage|
-    enc_storage = encrypted_data_bag_item(storage_databag, s["id"])
-    {
-      enc_storage["type"] => [
-        {
-          "access_key_id"       => enc_storage["access_key_id"],
-          "secret_access_key"   => enc_storage["secret_access_key"],
-          "region"              => enc_storage["region"],
-          "bucket"              => enc_storage["bucket"],
-          "encryption"          => enc_storage["encryption"],
-          "username"            => enc_storage["username"],
-          "password"            => enc_storage["password"],
-          "host"                => enc_storage["host"],
-          "path"                => ::File.join(s["path"] || application_id, node.chef_environment),
-          "keep"                => s["keep"] || 5
-        }
-      ]
-    }
-  end
+  Mo::Backup::Storage.build(storages_to_use, storage_databag)
 end
 
 def get_databases(databases)

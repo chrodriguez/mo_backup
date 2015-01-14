@@ -352,3 +352,4 @@ THE SOFTWARE.
 
 * Author:: Christian Rodriguez (chrodriguez@gmail.com)
 * Author:: Leandro Di Tommaso (leandro.ditommaso@mikroways.net)
+* Author:: Nahuel Cuesta Luengo (nahuelcuestaluengo@gmail.com)

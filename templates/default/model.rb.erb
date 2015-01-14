@@ -25,26 +25,11 @@ Model.new(:<%= name %>, "<%= description %>") do
   end
 
   <% (storages || []).each do |storage| %>
-    <% (storage["s3"] || []).each do |s| %>
-  store_with S3 do |s3|
-    s3.access_key_id     = "<%= s["access_key_id"] %>"
-    s3.secret_access_key = "<%= s["secret_access_key"] %>"
-    s3.region            = "<%= s["region"] %>"
-    s3.bucket            = "<%= s["bucket"] %>"
-    s3.path              = "<%= s["path"] %>"
-    s3.keep              = "<%= s["keep"] %>"
-  end
-    <% end %>
-    <% (storage["sftp"] || []).each do |s| %>
-  store_with SFTP do |server|
-    server.username = "<%= s["username"] %>"
-    server.password = "<%= s["password"] %>"
-    server.ip       = "<%= s["host"] %>"
-    server.port     = <%= s["port"] || 22 %>
-    server.path     = "<%= s["path"] %>"
-    server.keep     = "<%= s["keep"] %>"
-  end
-    <% end %>
+    store_with <%= storage.storage_id %> do |s|
+      <% storage.options.each do |key, value| %>
+        s.<%= key %> = <%= value %>
+      <% end %>
+    end
   <% end %>
 
   <% (databases || []).each do |ddbb| %>
