@@ -36,7 +36,7 @@ For now, this cookbook:
   * Application files.
   * MySQL databases.
 * Supports:
-  * Amazon S3 and SFTP as storages.
+  * Dropbox, Amazon S3 and SFTP as storages.
   * Backup scheduling.
   * Compression with Gzip.
   * Mail relay configuration.
@@ -53,7 +53,6 @@ Features to be implemented:
   * Redis.
 * Notifiers: not sure yet about this.
 * Storages.
-  * Dropbox.
   * SCP.
 
 ## Supported Platforms
@@ -207,6 +206,9 @@ An example databag:
 Storage databag will have all the possible storages used for backups. Each
 application could use a different storage and the configuration will use the
 values defined in the corresponding item.
+
+Each storage entry require the type to be specified. So far, supported storage
+types are Dropbox, S3 and SFTP.
 
 An example S3 databag item:
 
