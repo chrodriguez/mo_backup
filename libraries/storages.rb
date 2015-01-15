@@ -1,124 +1,32 @@
-# Chef sugar library
-$:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FILE__)]
-
-require 'chef/sugar'
+require_relative 'component'
 
 module Mo
   module Backup
 
-    class Storage
+    class Storage < Component
 
-      class << self
-        include Chef::Sugar::DSL
+      def self.prepare_information_for(storage, databag)
+        main_storage = encrypted_data_bag_item(databag, storage["id"])
+        # Application defined values must overwrite default main storage values
+        Chef::Mixin::DeepMerge.deep_merge!(storage, main_storage)
+        main_storage
       end
 
-      def self.build(storages_to_use, databag)
-        storages_to_use.map do |s|
-          application_storage = s.dup
-          main_storage = encrypted_data_bag_item(databag, s["id"])
-          # Application defined values must overwrite default main storage values
-          Chef::Mixin::DeepMerge.deep_merge!(application_storage, main_storage)
-          build_storage(main_storage)
-        end
-      end
-
-      def self.build_storage(storage_information)
-        klass = class_for(storage_information)
-        klass.new(storage_information)
-      end
-
-      def self.class_for(storage_information)
-        raise "Storage type is not specified." unless storage_information["type"]
-        class_name = storage_information["type"].capitalize
-        begin
-          Mo::Backup::Storages.const_get(class_name)
-        rescue NameError
-          raise "Invalid storage type: #{storage_information["type"]}"
-        end
+      def self.lookup_module
+        Mo::Backup::Storages
       end
 
     end
 
-
     module Storages
 
-      module OptionsDSL
+      class Default < Components::Default
 
-        module ClassMethods
+        alias :storage_id :component_id
 
-          def option(name, type, default = nil)
-            self.definition[name] = default
-            define_method "sanitize_option_#{name}", &sanitize_block_for(type)
-          end
-
-          def definition
-            @definition ||= {}
-          end
-
-          def storage_id(id)
-            @storage_id = id
-          end
-
-          private
-
-          def sanitize_block_for(type)
-            case type
-            when :symbol
-              ->(value) { ":#{value}" }
-            when :string
-              ->(value) { "'#{value}'" }
-            else
-              ->(value) { value }
-            end
-          end
-
-        end
-
-        def self.included(base)
-          base.extend ClassMethods
-        end
-
-      end
-
-      class Default
-
-        include OptionsDSL
-
-        attr_reader :id, :options
-
-        def initialize(options)
-          @id = options["id"]
-          @options = sanitize(options.to_hash)
-        end
-
-        def storage_id
-          self.class.instance_variable_get(:@storage_id) || self.class.name.split("::").last
-        end
-
-        def valid_keys
-          self.class.definition.keys
-        end
-
-        protected
-
-        def sanitize(options)
-          # http://stackoverflow.com/questions/17609036/how-do-i-create-the-intersection-of-two-hashes
-          keys = options.keys & valid_keys
-          valid_options = Hash[keys.zip(options.values_at(*keys))]
-          options = default_options
-          Chef::Mixin::DeepMerge.deep_merge!(valid_options, options)
-          sanitize_values!(options)
-          options
-        end
-
-        def default_options
-          self.class.definition.reject { |k, v| v.nil? }
-        end
-
-        def sanitize_values!(options)
-          options.keys.each do |key|
-            options[key] = send "sanitize_option_#{key}", options[key]
-          end
+        # Alias for class method
+        class << self
+          alias :storage_id :component_id
         end
 
       end
@@ -156,5 +64,6 @@ module Mo
       end
 
     end
+
   end
 end
