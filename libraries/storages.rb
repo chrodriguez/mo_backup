@@ -56,8 +56,7 @@ module Mo
           end
 
           def storage_id(id)
-            self.definition["storage_id"] = id
-            define_method "sanitize_option_storage_id", &sanitize_block_for(:storage_id)
+            @storage_id = id
           end
 
           private
@@ -93,7 +92,7 @@ module Mo
         end
 
         def storage_id
-          @options["storage_id"] ||= self.class.name.split("::").last
+          self.class.instance_variable_get(:@storage_id) || self.class.name.split("::").last
         end
 
         def valid_keys
