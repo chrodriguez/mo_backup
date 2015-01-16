@@ -1,7 +1,5 @@
 module Mo
-
   module Backup
-
     module OptionsDSL
 
       module ClassMethods

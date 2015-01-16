@@ -4,8 +4,6 @@ $:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FIL
 require 'chef/sugar'
 require 'etc'
 
-require_relative 'storages'
-
 def mo_backup_generate_model(app)
 
   data = data_bag_item_for_environment(app["databag"], app["id"])

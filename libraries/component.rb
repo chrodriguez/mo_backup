@@ -2,10 +2,9 @@
 $:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FILE__)]
 
 require 'chef/sugar'
-require_relative 'optionsdsl'
+require_relative 'options_dsl'
 
 module Mo
-
   module Backup
 
     class Component
@@ -42,14 +41,6 @@ module Mo
         rescue NameError
           raise "Invalid component type: #{component_information["type"]}"
         end
-      end
-
-    end
-
-    module Components
-
-      class Default
-        include Mo::Backup::OptionsDSL
       end
 
     end
