@@ -6,7 +6,7 @@
   description = @description
   storages = @storages
   databases = @databases
-  sync_config = @sync_config
+  syncers = @syncers
   enc_config = @enc_config
   mail_config = @mail_config
 %>
@@ -25,11 +25,11 @@ Model.new(:<%= name %>, "<%= description %>") do
   end
 
   <% (storages || []).each do |storage| %>
-    store_with <%= storage.storage_id %> do |s|
-      <% storage.options.each do |key, value| %>
-        s.<%= key %> = <%= value %>
-      <% end %>
-    end
+  store_with <%= storage.storage_id %> do |s|
+    <% storage.options.each do |key, value| %>
+      s.<%= key %> = <%= value %>
+    <% end %>
+  end
   <% end %>
 
   <% (databases || []).each do |ddbb| %>
@@ -53,41 +53,19 @@ Model.new(:<%= name %>, "<%= description %>") do
   compress_with Gzip
   <% end %>
 
-  <% (sync_config || []).each do |sc| %>
-    <% (sc["rsync"] || []).each do |r| %>
-  sync_with RSync::Push do |rsync|
-    rsync.mode                        = :<%= r["mode"] || "rsync_daemon" %>
-    rsync.host                        = "<%= r["host"] %>"
-    <% if r["rsync_user"] %>
-    rsync.rsync_user                  = "<%= r["rsync_user"] %>"
+  <% (syncers || []).each do |syncer| %>
+  sync_with <%= syncer.syncer_id %> do |r|
+    <% syncer.options.each do |key, value| %>
+    r.<%= key %> = <%= value %>
     <% end %>
-    <% if r["rsync_password"] %>
-    rsync.rsync_password              = "<%= r["rsync_password"] %>"
-    <% end %>
-    rsync.port                        = "<%= r["port"] || "873" %>"
-    <% if r["ssh_user"] %>
-    rsync.ssh_user                    = "<%= r["ssh_user"] %>"
-    <% end %>
-    <% if r["additional_ssh_options"] %>
-    rsync.additional_ssh_options      = "<%= r["additional_ssh_options"] %>"
-    <% end %>
-    <% if r["additional_rsync_options"] %>
-    rsync.additional_rsync_options    = "<%= r["additional_rsync_options"] %>"
-    <% end %>
-    rsync.mirror                      = <%= r["mirror"] || true %>
-    rsync.compress                    = <%= r["compress"] || true %>
-
-    rsync.directories do |directory|
-      <% r["directory"]["add"].each do |dir| %>
+    r.directories do |directory|
+    <% syncer.directory["add"].each do |dir| %>
       directory.add "<%= "#{dir}" %>"
-      <% end %>
-      <% r["directory"]["exclude"].each do |dir| %>
-      directory.exclude "<%= "#{dir}" %>"
-      <% end %>
-    end
-    rsync.path = "<%= r["path"] || "backups" %>"
-  end
     <% end %>
+    <% syncer.directory["exclude"].each do |dir| %>
+      directory.exclude "<%= "#{dir}" %>"
+    <% end %>
+  end
   <% end %>
 
   <% if enc_config %>

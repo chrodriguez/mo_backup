@@ -47,9 +47,9 @@ module Mo
     end
 
     module Components
-      
+
       class Default
-        include OptionsDSL
+        include Mo::Backup::OptionsDSL
       end
 
     end

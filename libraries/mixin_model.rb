@@ -16,7 +16,7 @@ def mo_backup_generate_model(app)
   storages = get_storages(data["id"], data["backup"]["storages_databag"], data["backup"]["storages"])
   databases = get_databases(data["databases"])
   mail_config = get_mail_config(data["backup"]["mail_databag"], data["backup"]["mail"])
-  sync_config = get_sync_config(data["backup"]["syncers_databag"], data["backup"]["syncers"])
+  syncers = get_syncers(data["backup"]["syncers_databag"], data["backup"]["syncers"])
 
   template ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || "Backup/models", "#{data["id"]}_#{node.chef_environment}.rb") do
     owner data["user"]
@@ -24,7 +24,7 @@ def mo_backup_generate_model(app)
     source "model.rb.erb"
     cookbook "mo_backup"
     variables( :app => data, :name => "#{data["id"]}_#{node.chef_environment}", :description => data["description"],
-               :storages => storages, :databases => databases, :sync_config => sync_config,
+               :storages => storages, :databases => databases, :syncers => syncers,
                :mail_config => mail_config )
   end
 end
@@ -67,29 +67,8 @@ def get_databases(databases)
   end
 end
 
-def get_sync_config(syncers_databag, syncers_to_use)
-  syncers_to_use.map do |s; enc_syncer|
-    enc_syncer = encrypted_data_bag_item(syncers_databag, s["id"])
-    {
-      enc_syncer["type"] => [
-        {
-          "mode"                      => enc_syncer["mode"],
-          "host"                      => enc_syncer["host"],
-          "port"                      => enc_syncer["port"],
-          "ssh_user"                  => enc_syncer["ssh_user"],
-          "ssh_pubkey"                => enc_syncer["ssh_pubkey"],
-          "ssh_pubkey_file"           => enc_syncer["ssh_pubkey_file"],
-          "additional_ssh_options"    => enc_syncer["additional_ssh_options"],
-          "additional_rsync_options"  => enc_syncer["additional_rsync_options"],
-          "ssh_pubkey_file"           => enc_syncer["ssh_pubkey_file"],
-          "mirror"                    => enc_syncer["mirror"],
-          "compress"                  => enc_syncer["compress"],
-          "directory"                 => s["directory"],
-          "path"                      => enc_syncer["path"],
-        }
-      ]
-    }
-  end
+def get_syncers(syncers_databag, syncers_to_use)
+  Mo::Backup::Syncer.build(syncers_to_use, syncers_databag)
 end
 
 def get_mail_config(mail_databag, mail)
