@@ -10,7 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define 'vm', primary: true do |app|
     app.vm.hostname = "backup.vagrant.desarrollo.unlp.edu.ar"
-    app.omnibus.chef_version = :latest
+    app.omnibus.chef_version = "11.16.4"
     app.vm.box = "chef/ubuntu-14.04"
     app.vm.network :private_network, ip: "10.100.10.2"
     app.berkshelf.enabled = true
