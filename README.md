@@ -35,9 +35,9 @@ For now, this cookbook:
 * Supports installing rbenv globally and the backup gem inside it.
 * Provides a method to generate the backup configuration file (the model) for:
   * Application files.
-  * MySQL and MongoDB databases.
+  * MySQL, MongoDB and Redis databases.
 * Supports:
-  * Dropbox, Amazon S3 and SFTP as storages.
+  * Dropbox, Amazon S3, SCP and SFTP as storages.
   * Backup scheduling.
   * Compression with Gzip.
   * Mail relay configuration.
@@ -48,11 +48,7 @@ For now, this cookbook:
 
 Features to be implemented:
 
-* Databases.
-  * Redis.
 * Notifiers: not sure yet about this.
-* Storages.
-  * SCP.
 
 ## Supported Platforms
 
