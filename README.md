@@ -1,7 +1,8 @@
 # Cookbook: mo_backup
 
 Cookbook to perform application backups. This cookbook uses
-[backup gem](http://meskyanichi.github.io/backup/v4/) to run the backups.
+[backup gem](http://meskyanichi.github.io/backup/v4/) to run the backups. Please
+check the gem documentation for valid options on each supported type.
 
 ## Table of Contents
 
@@ -34,22 +35,20 @@ For now, this cookbook:
 * Supports installing rbenv globally and the backup gem inside it.
 * Provides a method to generate the backup configuration file (the model) for:
   * Application files.
-  * MySQL databases.
+  * MySQL and MongoDB databases.
 * Supports:
   * Dropbox, Amazon S3 and SFTP as storages.
   * Backup scheduling.
   * Compression with Gzip.
   * Mail relay configuration.
   * Encryption with OpenSSL.
-
-Partial support for synchronization using rsync.
+  * Synchronization using Rsync.
 
 ### Features planned
 
 Features to be implemented:
 
 * Databases.
-  * MongoDB.
   * Redis.
 * Notifiers: not sure yet about this.
 * Storages.
