@@ -27,26 +27,17 @@ Model.new(:<%= name %>, "<%= description %>") do
   <% (storages || []).each do |storage| %>
   store_with <%= storage.storage_id %> do |s|
     <% storage.options.each do |key, value| %>
-      s.<%= key %> = <%= value %>
+    s.<%= key %> = <%= value %>
     <% end %>
   end
   <% end %>
 
   <% (databases || []).each do |ddbb| %>
-    <% (ddbb["mysql"] || []).each do |d| %>
-  database MySQL do |db|
-    db.name               = "<%= d["name"] %>"
-    db.username           = "<%= d["username"] %>"
-    db.password           = "<%= d["password"] %>"
-    <% if d["socket"] %>
-    db.socket             = "<%= d["socket"] %>"
-    <% else %>
-    db.host               = "<%= d["host"] || "localhost" %>"
-    db.port               = <%= d["port"] || 3306 %>
+  database <%= ddbb.database_id %> do |db|
+    <% ddbb.options.each do |key, value| %>
+    db.<%= key %> = <%= value %>
     <% end %>
-    db.prepare_backup     = <%= d["prepare_backup"] || true %>
   end
-    <% end %>
   <% end %>
 
   <% if app["backup"]["compress"] %>

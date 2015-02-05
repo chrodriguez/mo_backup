@@ -16,6 +16,13 @@ def mo_backup_generate_model(app)
   mail_config = get_mail_config(data["backup"]["mail_databag"], data["backup"]["mail"])
   syncers = get_syncers(data["backup"]["syncers_databag"], data["backup"]["syncers"])
 
+  directory ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || "Backup/models") do
+    owner data["user"]
+    group get_group(data["user"])
+    action :create
+    recursive true
+  end
+
   template ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || "Backup/models", "#{data["id"]}_#{node.chef_environment}.rb") do
     owner data["user"]
     group get_group(data["user"])
@@ -50,19 +57,7 @@ def get_storages(application_id, storage_databag, storages_to_use)
 end
 
 def get_databases(databases)
-  databases.map do |db|
-    {
-      db["type"] => [
-        {
-          "name"       => db["name"],
-          "username"   => db["username"],
-          "password"   => db["password"],
-          "host"       => db["host"],
-          "port"       => db["port"]
-        }
-      ]
-    }
-  end
+  Mo::Backup::Database.build(databases)
 end
 
 def get_syncers(syncers_databag, syncers_to_use)
