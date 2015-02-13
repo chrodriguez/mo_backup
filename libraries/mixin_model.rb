@@ -11,10 +11,10 @@ def mo_backup_generate_model(app)
 
   # If any of the data bags does not exist the following lines would fail. 
   # Check how to ask if a data bag is defined.
-  storages = get_storages(data["id"], data["backup"]["storages_databag"] || "backup_storages", data["backup"]["storages"])
+  storages = get_storages(data["id"], data["backup"]["storages_databag"] || node["mo_backup"]["backup_storages"], data["backup"]["storages"])
   databases = get_databases(data["databases"])
-  mail_config = get_mail_config(data["backup"]["mail_databag"] || "mailers", data["backup"]["mail"])
-  syncers = get_syncers(data["backup"]["syncers_databag"] || "backup_syncers", data["backup"]["syncers"])
+  mail_config = get_mail_config(data["backup"]["mail_databag"] || node["mo_backup"]["mail_databag"], data["backup"]["mail"])
+  syncers = get_syncers(data["backup"]["syncers_databag"] || node["mo_backup"]["syncers_databag"], data["backup"]["syncers"])
 
   directory ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || "Backup/models") do
     owner data["user"]
