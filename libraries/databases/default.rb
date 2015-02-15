@@ -1,5 +1,3 @@
-require_relative '../component'
-
 module Mo
   module Backup
     module Databases
@@ -18,3 +16,8 @@ module Mo
     end
   end
 end
+
+require_relative 'mongodb'
+require_relative 'mysql'
+require_relative 'redis'
+

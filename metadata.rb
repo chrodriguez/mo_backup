@@ -7,3 +7,4 @@ long_description 'Installs/Configures mo_backup'
 version          '0.1.3'
 
 depends 'rbenv',        '~>1.7.1'
+depends 'chef-sugar',   '~>2.5.0'

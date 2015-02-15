@@ -1,5 +1,3 @@
-require_relative '../component'
-
 module Mo
   module Backup
     module Syncers
@@ -22,3 +20,5 @@ module Mo
     end
   end
 end
+
+require_relative 'rsync'

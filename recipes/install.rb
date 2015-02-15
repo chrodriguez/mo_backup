@@ -1,3 +1,8 @@
+include_recipe "chef-sugar"
+
+Mo::Backup::Component.load_chef_sugar
+
+
 include_recipe "rbenv::default"
 include_recipe "rbenv::ruby_build"
 

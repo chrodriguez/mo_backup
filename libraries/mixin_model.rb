@@ -1,7 +1,3 @@
-# Chef sugar library
-$:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FILE__)]
-
-require 'chef/sugar'
 require 'etc'
 
 def mo_backup_generate_model(app)
@@ -11,7 +7,7 @@ def mo_backup_generate_model(app)
 
   # If any of the data bags does not exist the following lines would fail. 
   # Check how to ask if a data bag is defined.
-  storages = get_storages(data["id"], data["backup"]["storages_databag"] || node["mo_backup"]["backup_storages"], data["backup"]["storages"])
+  storages = get_storages(data["backup"]["storages_databag"] || node["mo_backup"]["storages_databag"], data["backup"]["storages"])
   databases = get_databases(data["databases"])
   mail_config = get_mail_config(data["backup"]["mail_databag"] || node["mo_backup"]["mail_databag"], data["backup"]["mail"])
   syncers = get_syncers(data["backup"]["syncers_databag"] || node["mo_backup"]["syncers_databag"], data["backup"]["syncers"])
@@ -52,7 +48,7 @@ end
 
 private
 
-def get_storages(application_id, storage_databag, storages_to_use)
+def get_storages(storage_databag, storages_to_use)
   Mo::Backup::Storage.build(storages_to_use, storage_databag)
 end
 

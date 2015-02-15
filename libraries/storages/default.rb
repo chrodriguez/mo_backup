@@ -1,5 +1,3 @@
-require_relative '../component'
-
 module Mo
   module Backup
     module Storages
@@ -18,3 +16,9 @@ module Mo
     end
   end
 end
+
+require_relative 'dropbox'
+require_relative 's3'
+require_relative 'scp'
+require_relative 'sftp'
+
