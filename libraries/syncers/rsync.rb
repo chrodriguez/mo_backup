@@ -1,5 +1,3 @@
-require_relative 'default'
-
 module Mo
   module Backup
     module Syncers

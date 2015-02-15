@@ -1,16 +1,10 @@
-# Chef sugar library
-$:.unshift *Dir[File.expand_path('../../files/default/vendor/gems/**/lib', __FILE__)]
-
-require 'chef/sugar'
-require_relative 'options_dsl'
-
 module Mo
   module Backup
 
     class Component
 
-      class << self
-        include Chef::Sugar::DSL
+      def self.load_chef_sugar
+        extend Chef::Sugar::DSL
       end
 
       def self.build(components, *extras)
@@ -47,3 +41,10 @@ module Mo
 
   end
 end
+
+require_relative 'options_dsl'
+require_relative 'components/default'
+require_relative 'databases/default'
+require_relative 'storages/default'
+require_relative 'syncers/default'
+
