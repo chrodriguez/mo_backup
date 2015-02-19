@@ -16,7 +16,7 @@ GRAPH
     windows (>= 0.0.0)
     yum (~> 3.0)
     yum-epel (>= 0.0.0)
-  mo_backup (0.1.14)
+  mo_backup (0.1.15)
     chef-sugar (~> 2.5.0)
     rbenv (~> 1.7.1)
   ohai (2.0.1)

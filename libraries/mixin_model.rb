@@ -3,10 +3,7 @@ require 'etc'
 def mo_backup_generate_model(app)
 
   data = data_bag_item_for_environment(app["databag"], app["id"])
-  Chef::Log.error("Data from app: #{app}")
-  Chef::Log.error("Data from databag: #{data}")
   data = Chef::Mixin::DeepMerge.deep_merge!(data, app.to_hash)
-  Chef::Log.error("Data after merge: #{data}")
 
   # Generate empty config.rb if it does not exist.
   file ::File.join(::Dir.home(data["user"]), data["backup"]["dir"] || node["mo_backup"]["dir"], "config.rb") do
@@ -21,7 +18,6 @@ def mo_backup_generate_model(app)
   # Check how to ask if a data bag is defined.
   storages = get_storages(data["backup"]["storages_databag"] || node["mo_backup"]["storages_databag"], data["backup"]["storages"])
   databases = get_databases(data["databases"])
-  Chef::Log.error("Databases after: #{databases}")
   mail_config = get_mail_config(data["backup"]["mail_databag"] || node["mo_backup"]["mail_databag"], data["backup"]["mail"])
   syncers = get_syncers(data["backup"]["syncers_databag"] || node["mo_backup"]["syncers_databag"], data["backup"]["syncers"])
 
@@ -66,8 +62,6 @@ def get_storages(storage_databag, storages_to_use)
 end
 
 def get_databases(databases)
-  Chef::Log.error("Databases #{databases}")
-  Chef::Log.error("Databases values #{databases.values}")
   Mo::Backup::Database.build(databases.values)
 end
 
