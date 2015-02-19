@@ -5,6 +5,15 @@ def mo_backup_generate_model(app)
   data = data_bag_item_for_environment(app["databag"], app["id"])
   Chef::Mixin::DeepMerge.deep_merge!(app, data)
 
+  # Generate empty config.rb if it does not exist.
+  file ::File.join(::Dir.home(data["user"]), data["backup"]["dir"] || node["mo_backup"]["dir"], "config.rb") do
+    content "# Backup v4.x Configuration"
+    owner data["user"]
+    group get_group(data["user"])
+    mode '0755'
+    action :create
+  end
+
   # If any of the data bags does not exist the following lines would fail. 
   # Check how to ask if a data bag is defined.
   storages = get_storages(data["backup"]["storages_databag"] || node["mo_backup"]["storages_databag"], data["backup"]["storages"])
@@ -12,7 +21,7 @@ def mo_backup_generate_model(app)
   mail_config = get_mail_config(data["backup"]["mail_databag"] || node["mo_backup"]["mail_databag"], data["backup"]["mail"])
   syncers = get_syncers(data["backup"]["syncers_databag"] || node["mo_backup"]["syncers_databag"], data["backup"]["syncers"])
 
-  directory ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || "Backup/models") do
+  directory ::File.join(::Dir.home(data["user"]), data["backup"]["models_dir"] || node["mo_backup"]["models_dir"]) do
     owner data["user"]
     group get_group(data["user"])
     action :create
