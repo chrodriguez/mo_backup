@@ -15,7 +15,7 @@ module Mo
         option "ssh_user", :string
         option "additional_ssh_options", :string
         option "additional_rsync_options", :string
-        syncer_id "Rsync::Push"
+        syncer_id "RSync::Push"
       end
 
     end
