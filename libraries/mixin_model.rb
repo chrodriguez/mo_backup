@@ -53,7 +53,7 @@ def get_storages(storage_databag, storages_to_use)
 end
 
 def get_databases(databases)
-  Mo::Backup::Database.build(databases)
+  Mo::Backup::Database.build(databases.values)
 end
 
 def get_syncers(syncers_databag, syncers_to_use)

@@ -41,10 +41,3 @@ module Mo
 
   end
 end
-
-require_relative 'options_dsl'
-require_relative 'components/default'
-require_relative 'databases/default'
-require_relative 'storages/default'
-require_relative 'syncers/default'
-
