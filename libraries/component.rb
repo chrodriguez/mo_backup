@@ -8,7 +8,7 @@ module Mo
       end
 
       def self.build(components, *extras)
-        components.map do |component|
+        (components || []).map do |component|
           component_information = prepare_information_for(component, *extras)
           build_component(component_information)
         end
