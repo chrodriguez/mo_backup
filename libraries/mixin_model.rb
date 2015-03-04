@@ -1,9 +1,6 @@
 require 'etc'
 
-def mo_backup_generate_model(app)
-
-  data = data_bag_item_for_environment(app["databag"], app["id"])
-  data = Chef::Mixin::DeepMerge.deep_merge!(data, app.to_hash)
+def mo_backup_generate_model(data)
 
   # Generate empty config.rb if it does not exist.
   file ::File.join(::Dir.home(data["user"]), data["backup"]["dir"] || node["mo_backup"]["dir"], "config.rb") do
@@ -17,7 +14,7 @@ def mo_backup_generate_model(app)
   # If any of the data bags does not exist the following lines would fail. 
   # Check how to ask if a data bag is defined.
   storages = get_storages(data["backup"]["storages_databag"] || node["mo_backup"]["storages_databag"], data["backup"]["storages"])
-  databases = get_databases(data["databases"])
+  databases = get_databases(data["databases"].slice(data['backup']['databases']))
   mail_config = get_mail_config(data["backup"]["mail_databag"] || node["mo_backup"]["mail_databag"], data["backup"]["mail"])
   syncers = get_syncers(data["backup"]["syncers_databag"] || node["mo_backup"]["syncers_databag"], data["backup"]["syncers"])
 
@@ -39,18 +36,16 @@ def mo_backup_generate_model(app)
   end
 end
 
-def mo_backup_schedule_job(app, action="create")
+def mo_backup_schedule_job(data, action="create")
 
-  data = data_bag_item_for_environment(app["databag"], app["id"])["backup"]
-
-  cron app["id"] do
+  cron data["id"] do
     minute data["schedule"]["minute"]    || "0"
     hour data["schedule"]["hour"]        || "2"
     day data["schedule"]["day"]          || "*"
     month data["schedule"]["month"]      || "*"
     weekday data["schedule"]["weekday"]  || "*"
-    user app["user"]                     || "root"
-    command "/opt/rbenv/shims/backup perform --trigger #{app["id"]}_#{node.chef_environment}"
+    user data["user"]                     || "root"
+    command "/opt/rbenv/shims/backup perform --trigger #{data["id"]}_#{node.chef_environment}"
     action action.to_sym
   end
 end
